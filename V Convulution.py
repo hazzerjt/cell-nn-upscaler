@@ -9,7 +9,7 @@ from torchvision import datasets, transforms
 
 transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
 dataset = datasets.ImageFolder('data\Cells', transform)
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True)
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
 
 torch.set_grad_enabled(True)
 
@@ -23,7 +23,7 @@ class Network(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3)
 
         self.maxpool_conv = nn.Sequential(nn.MaxPool2d(2))
-        self.conv3 = nn.Conv2d(in_channels=125, out_channels=256, kernel_size=3)
+        self.conv3 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3)
 
         self.maxpool_conv = nn.Sequential(nn.MaxPool2d(2))
         self.conv4 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3)
@@ -41,7 +41,7 @@ class Network(nn.Module):
         self.conv8 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=3)
 
         self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.conv9 = nn.Conv2d(in_channels=126, out_channels=64, kernel_size=3)
+        self.conv9 = nn.Conv2d(in_channels=128, out_channels=64, kernel_size=3)
 
         self.out = nn.Linear(in_features=64, out_features=32)
 
