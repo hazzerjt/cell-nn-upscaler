@@ -5,30 +5,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
-import torchvision.transforms as transforms
+from torchvision import datasets, transforms
 
-train_set = torchvision.datasets.FashionMNIST(
-    root='./data'
-    ,train=True
-    ,download=True
-    ,transform=transforms.Compose([
-        transforms.ToTensor()
-    ])
-)
 
-train_loader = torch.utils.data.DataLoader(train_set,batch_size=100,shuffle=True)
+transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
+
+dataset = datasets.ImageFolder('data\Cells', transform)
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True)
 
 torch.set_grad_enabled(True)
 
 class Network(nn.Module):
     def __init__(self):
         super().__init__()
-        #self.conv1 = nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5)
-        #self.conv2 = nn.Conv2d(in_channels=6, out_channels=12, kernel_size=5)
-
-        #self.fc1 = nn.Linear(in_features=12 * 4 * 4, out_features=120)
-        #self.fc2 = nn.Linear(in_features=120, out_features=60)
-        #self.out = nn.Linear(in_features=60, out_features=10)
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=6, kernel_size=3)
         self.conv2 = nn.Conv2d(in_channels=6, out_channels=12, kernel_size=3)
@@ -107,7 +96,7 @@ class Network(nn.Module):
 
 network = Network()
 
-batch = next(iter(train_loader))
+batch = next(iter(dataloader))
 images, labels = batch
 
 plt.imshow(images[0,0,:,:])
