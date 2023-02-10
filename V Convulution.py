@@ -73,7 +73,7 @@ class Network(nn.Module):
         t = self.up(t)
         t = self.conv9(t)
 
-        t = self.out(t)
+        #t = self.out(t)
 
         return t
 
