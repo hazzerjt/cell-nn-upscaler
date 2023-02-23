@@ -36,7 +36,7 @@ class Network(nn.Module):
         self.up4 = up(128, 64, 3)
         self.up5 = up(64, 32, 3)
 
-        self.conv3 = nn.Conv2d(64, 1, 1)
+        self.conv3 = nn.Conv2d(64, 1, 1)#Reduces the number of channels to 1
 
     def forward(self, t):
         t = t
@@ -71,10 +71,6 @@ class Network(nn.Module):
         t = self.conv3(t)
         print(t.size())
 
-        t_np = t.detach().numpy()
-        #plt.plot(t_np)
-
-
         return t
 
     def __repr__(self):
@@ -85,7 +81,7 @@ network = Network()
 batch = next(iter(dataloader))
 images, labels = batch
 
-plt.imshow(images[0,0,:,:])
+plt.imshow(images[0,0,:,:], cmap="gray")
 plt.show()
 print(labels)
 
