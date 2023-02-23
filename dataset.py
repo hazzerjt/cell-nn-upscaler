@@ -26,7 +26,7 @@ class cellDataset(Dataset):
             label = self.target_transform(label)
         return image, label
 
-dataset = cellDataset(annotations_file="data/Cells/labels.csv", img_dir="data/Cells")
+dataset = cellDataset(annotations_file="data/Cells/labels2.csv", img_dir="data/Cells")
 
 
 sample = dataset[0]
