@@ -82,12 +82,13 @@ class Network(nn.Module):
         return "Bunny Kitten"
 
 network = Network()
-
 batch = next(iter(dataloader))
 images, labels = batch
 
 plt.imshow(images[0,0,:,:], cmap="gray")
 plt.show()
-print(labels)
 
 preds = network(images)
+
+plt.imshow(preds[0,0,:,:].detach().numpy(), cmap="gray")
+plt.show()
