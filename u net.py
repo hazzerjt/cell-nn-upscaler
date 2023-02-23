@@ -7,10 +7,15 @@ import torch.optim as optim
 import torchvision
 from torchvision import datasets, transforms
 from network_components import *
+from dataset import cellDataset
 
-transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
-dataset = datasets.ImageFolder('data\Cells', transform)
+
+transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
+dataset = datasets.ImageFolder('data\Cells', transformCells)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
+
+#dataset = cellDataset(annotations_file="data/Cells/labels2.csv", img_dir="data/Cells/8bit images")
+#dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
 
 torch.set_grad_enabled(True)
 
@@ -36,7 +41,7 @@ class Network(nn.Module):
         self.up4 = up(128, 64, 3)
         self.up5 = up(64, 32, 3)
 
-        self.conv3 = nn.Conv2d(64, 1, 1)#Reduces the number of channels to 1
+        self.conv3 = nn.Conv2d(32, 1, 1)#Reduces the number of channels to 1
 
     def forward(self, t):
         t = t
@@ -86,11 +91,3 @@ plt.show()
 print(labels)
 
 preds = network(images)
-
-print(preds.argmax(dim=1))
-print(labels)
-print(preds.argmax(dim=1).eq(labels))
-print(preds.argmax(dim=1).eq(labels).sum())
-
-print(preds[0])
-print(labels[0])
