@@ -23,23 +23,23 @@ class Network(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1)
         self.BatchNorm2d1 = nn.BatchNorm2d(32)
         self.reLU1 = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
         self.BatchNorm2d2 = nn.BatchNorm2d(64)
         self.reLU2 = nn.ReLU(inplace=True)
 
-        self.down1 = down(64, 96, 128, 3)
-        self.down2 = down(128, 192, 256, 3)
-        self.down3 = down(256, 384, 512, 3)
-        self.down4 = down(512, 768, 1024, 3)
+        self.down1 = down(64, 96, 128, 3, 1)
+        self.down2 = down(128, 192, 256, 3, 1)
+        self.down3 = down(256, 384, 512, 3, 1)
+        self.down4 = down(512, 768, 1024, 3, 1)
 
-        self.up1 = up(1024, 512, 3)
-        self.up2 = up(512, 256, 3)
-        self.up3 = up(256, 128, 3)
-        self.up4 = up(128, 64, 3)
-        self.up5 = up(64, 32, 3)
+        self.up1 = up(1024, 512, 3, 1)
+        self.up2 = up(512, 256, 3, 1)
+        self.up3 = up(256, 128, 3, 1)
+        self.up4 = up(128, 64, 3, 1)
+        self.up5 = up(64, 32, 3, 1)
 
         self.conv3 = nn.Conv2d(32, 1, 1)#Reduces the number of channels to 1
 
