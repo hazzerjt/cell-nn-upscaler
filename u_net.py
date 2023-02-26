@@ -9,15 +9,15 @@ from torchvision import datasets, transforms
 from network_components import *
 from dataset import cellDataset
 
-
-transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
-dataset = datasets.ImageFolder('data\Cells', transformCells)
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
-
-#dataset = cellDataset(annotations_file="data/Cells/labels2.csv", img_dir="data/Cells/8bit images")
+#transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
+#dataset = datasets.ImageFolder('data/train', transformCells)
 #dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
 
-torch.set_grad_enabled(True)
+transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToPILImage(), transforms.ToTensor()])
+dataset = cellDataset("data/train.csv", transform=transformCells)
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
+
+torch.set_grad_enabled(False)
 
 class Network(nn.Module):
     def __init__(self):
@@ -81,14 +81,22 @@ class Network(nn.Module):
     def __repr__(self):
         return "Bunny Kitten"
 
-network = Network()
-batch = next(iter(dataloader))
-images, labels = batch
 
+network = Network()
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+network = network.to(device)
+
+batch = next(iter(dataloader))
+images, labels, index = batch
 plt.imshow(images[0,0,:,:], cmap="gray")
 plt.show()
+images = images.to(device)
+
+print(labels)
 
 preds = network(images)
 
+preds = preds.to("cpu")
 plt.imshow(preds[0,0,:,:].detach().numpy(), cmap="gray")
 plt.show()
