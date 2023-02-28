@@ -9,26 +9,10 @@ from torchvision import datasets, transforms
 from network_components import *
 from dataset import cellDataset
 
-#transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
-#dataset = datasets.ImageFolder('data/train', transformCells)
-#dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
-
-transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToPILImage(), transforms.ToTensor()])
-dataset = cellDataset("data/train.csv", transform=transformCells)
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
-
-torch.set_grad_enabled(False)
-
 class Network(nn.Module):
     def __init__(self):
         super().__init__()
-
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1)
-        self.BatchNorm2d1 = nn.BatchNorm2d(32)
-        self.reLU1 = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
-        self.BatchNorm2d2 = nn.BatchNorm2d(64)
-        self.reLU2 = nn.ReLU(inplace=True)
+        self.inc = inc(1, 32, 64, 3, 1)
 
         self.down1 = down(64, 96, 128, 3, 1)
         self.down2 = down(128, 192, 256, 3, 1)
@@ -39,38 +23,34 @@ class Network(nn.Module):
         self.up2 = up(512, 256, 3, 1)
         self.up3 = up(256, 128, 3, 1)
         self.up4 = up(128, 64, 3, 1)
-        self.up5 = up(64, 32, 3, 1)
+
+        self.final = final(64, 32, 3, 1)
 
         self.conv3 = nn.Conv2d(32, 1, 1)#Reduces the number of channels to 1
 
     def forward(self, t):
         t = t
-        t = self.conv1(t)
-        t = self.BatchNorm2d1(t)
-        t = self.reLU1(t)
-        t = self.conv2(t)
-        t = self.BatchNorm2d2(t)
-        t = self.reLU2(t)
-        print(t.size())
+        t1 = self.inc(t)
+        print(t1.size())
 
-        t = self.down1(t)
-        print(t.size())
-        t = self.down2(t)
-        print(t.size())
-        t = self.down3(t)
-        print(t.size())
-        t = self.down4(t)
-        print(t.size())
+        t2 = self.down1(t1)
+        print(t2.size())
+        t3 = self.down2(t2)
+        print(t3.size())
+        t4 = self.down3(t3)
+        print(t4.size())
+        t5 = self.down4(t4)
+        print(t5.size())
 
-        t = self.up1(t)
+        t = self.up1(t5, t4)
         print(t.size())
-        t = self.up2(t)
+        t = self.up2(t, t3)
         print(t.size())
-        t = self.up3(t)
+        t = self.up3(t, t2)
         print(t.size())
-        t = self.up4(t)
+        t = self.up4(t, t1)
         print(t.size())
-        t = self.up5(t)
+        t = self.final(t)
         print(t.size())
 
         t = self.conv3(t)
@@ -80,23 +60,3 @@ class Network(nn.Module):
 
     def __repr__(self):
         return "Bunny Kitten"
-
-
-network = Network()
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-network = network.to(device)
-
-batch = next(iter(dataloader))
-images, labels, index = batch
-plt.imshow(images[0,0,:,:], cmap="gray")
-plt.show()
-images = images.to(device)
-
-print(labels)
-
-preds = network(images)
-
-preds = preds.to("cpu")
-plt.imshow(preds[0,0,:,:].detach().numpy(), cmap="gray")
-plt.show()

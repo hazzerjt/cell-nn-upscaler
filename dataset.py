@@ -4,7 +4,8 @@ import os
 from torchvision.io import read_image
 
 class cellDataset(Dataset):
-    def __init__(self, csv_file, root_dir="", transform=None):
+    def __init__(self, csv_file, root_dir="", image_size="both", transform=None):
+        self.image_size = image_size
         self.annotation_df = pd.read_csv(csv_file)
         self.root_dir = root_dir
         self.transform = transform
