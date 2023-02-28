@@ -23,6 +23,5 @@ print(labels)
 
 preds = network(images)
 
-preds = preds.to("cpu")
 plt.imshow(preds[0,0,:,:].detach().numpy(), cmap="gray")
 plt.show()
