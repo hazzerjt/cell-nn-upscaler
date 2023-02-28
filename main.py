@@ -8,19 +8,16 @@ transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1)
 dataset = cellDataset("data/train.csv", transform=transformCells)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
 
-torch.set_grad_enabled(False)
+torch.set_grad_enabled(True)
 
 network = Network()
 
-#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = "cpu"
-network = network.to(device)
+
 
 batch = next(iter(dataloader))
 images, labels, index = batch
 plt.imshow(images[0,0,:,:], cmap="gray")
 plt.show()
-images = images.to(device)
 
 print(labels)
 
