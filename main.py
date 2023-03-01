@@ -12,8 +12,6 @@ torch.set_grad_enabled(True)
 
 network = Network()
 
-
-
 batch = next(iter(dataloader))
 images, labels, index = batch
 plt.imshow(images[0,0,:,:], cmap="gray")

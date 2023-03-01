@@ -1,19 +1,23 @@
 from network_components import *
 
 class Network(nn.Module):
-    def __init__(self):
+    def __init__(self, bilinear=False):
         super().__init__()
+        self.bilinear = bilinear
+
         self.inc = inc(1, 32, 64, 3, 1)
 
-        self.down1 = down(64, 96, 128, 3, 1)
-        self.down2 = down(128, 192, 256, 3, 1)
-        self.down3 = down(256, 384, 512, 3, 1)
-        self.down4 = down(512, 768, 1024, 3, 1)
+        self.down1 = down(64, 128, 3, 1)
+        self.down2 = down(128, 256, 3, 1)
+        self.down3 = down(256, 512, 3, 1)
+        self.down4 = down(512, 1024, 3, 1)
 
-        self.up1 = up(1024, 512, 3, 1)
-        self.up2 = up(512, 256, 3, 1)
-        self.up3 = up(256, 128, 3, 1)
-        self.up4 = up(128, 64, 3, 1)
+        factor = 2 if bilinear else 1
+
+        self.up1 = up(1024, 512 // factor, 3, 1, bilinear)
+        self.up2 = up(512, 256 // factor, 3, 1, bilinear)
+        self.up3 = up(256, 128 // factor, 3, 1, bilinear)
+        self.up4 = up(128, 64 // factor, 3, 1, bilinear)
 
         self.final = final(64, 32, 3, 1)
 
@@ -41,6 +45,7 @@ class Network(nn.Module):
         print(t.size())
         t = self.up4(t, t1)
         print(t.size())
+
         t = self.final(t)
         print(t.size())
 
