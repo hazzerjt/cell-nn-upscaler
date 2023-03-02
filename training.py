@@ -1,22 +1,34 @@
-#from dataset import cellDataset
-from dataset_test import cellDataset
 import torch
-from torchvision import datasets, transforms
-import matplotlib.pyplot as plt
-import torchvision
-from torch import optim
+from torchvision import transforms
+from torch.utils.data import DataLoader
+from test import cellDataset
+import torch.optim as optim
+import torch.nn as nn
+from u_net import Network
+
+torch.set_grad_enabled(True)
 
 transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToPILImage(), transforms.ToTensor()])
-dataset = cellDataset("data/train.csv", transform=transformCells, image_size="low")
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=5, shuffle=True)
+dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres", transform=transformCells)
+dataloader = DataLoader(dataset, shuffle=True, batch_size=5)
 
+batch = next(iter(dataloader))
+#lowres, highres = batch['lowres'], batch['highres']
 
-batch = iter(dataloader)
-print(batch)
-images, labels, index = batch
+network = Network()
 
-#for i in range(0, 5):
-    #if (labels==1):
-    #if batch[2] == 1:
-        #images, labels, index = batch
-        #plt.imshow(images[0,0,:,:], cmap="gray")
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(network.parameters(), lr=0.001, momentum=0.9)
+i = 0
+
+for epoch in range(2):  # loop over the dataset multiple times
+    running_loss = 0.0
+    for i, highres in enumerate(dataloader, 0):
+        lowres, highres = batch['lowres'], batch['highres']
+
+        optimizer.zero_grad()
+
+        outputs = network(lowres)
+        loss = criterion(outputs, highres)
+        loss.backward()
+        optimizer.step()

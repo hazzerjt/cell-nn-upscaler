@@ -14,7 +14,7 @@ class up(nn.Module):
             self.conv = DoubleConv(in_channels, out_channels, kernel_size, padding)
 
     def forward(self, t1, t2):
-        #return self.up(t)
+        t1 = self.up(t1)
         diffY = t2.size()[2] - t1.size()[2]
         diffX = t2.size()[3] - t1.size()[3]
 
@@ -77,7 +77,6 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True))
 
     def forward(self, t):
-        print(t.dtype)
         return self.double_conv(t)
 
 
