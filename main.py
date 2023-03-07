@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 torch.set_grad_enabled(False)
 
 transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToPILImage(), transforms.ToTensor()])
-dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres", transform=transformCells)
+dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres")
 dataloader = DataLoader(dataset, shuffle=True, batch_size=1)
 
 network = Network()
