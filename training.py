@@ -20,34 +20,31 @@ dataloader = DataLoader(dataset, shuffle=True, batch_size=5)
 batch = next(iter(dataloader))
 
 network = Network()
-network.to(device)
 
-for lr in range (0.001, 0.002, 0.0001):
-    for momentum in range (0.5, 1.5, 0.1):
 
-        criterion = nn.CrossEntropyLoss().to(device)
-        optimizer = optim.SGD(network.parameters(), lr=0.001, momentum=0.9)
 
-        for epoch in range(2):  # loop over the dataset multiple times
-            running_loss = 0.0
-            for i, highres in enumerate(dataloader, 0):
-                lowres, highres = batch['lowres'], batch['highres']
-                lowres.to(device)
-                highres.to(device)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(network.parameters(), lr=0.001, momentum=0.9)
 
-                optimizer.zero_grad()
+for epoch in range(2):  # loop over the dataset multiple times
+    running_loss = 0.0
+    for i, highres in enumerate(dataloader, 0):
+        lowres, highres = batch['lowres'], batch['highres']
 
-                outputs = network(lowres)
 
-                loss = criterion(outputs, highres).to(device)
-                loss.backward().to(device)
-                optimizer.step()
+        optimizer.zero_grad()
 
-                running_loss += loss.item().to(device)
+        outputs = network(lowres)
 
-                if (i*1) % 5 == 0:
-                    #training_loss = "LR=0.001, Momentum = 0.9"
-                    writer.add_scalar("trainingloss3", running_loss/5, epoch * len(dataloader) * i)
+        loss = criterion(outputs, highres).to(device)
+        loss.backward().to(device)
+        optimizer.step()
+
+        running_loss += loss.item().to(device)
+
+        if (i * 1) % 5 == 0:
+            # training_loss = "LR=0.001, Momentum = 0.9"
+            writer.add_scalar("trainingloss3", running_loss / 5, epoch * len(dataloader) * i)
 
 
 
