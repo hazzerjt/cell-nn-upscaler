@@ -1,55 +1,47 @@
-import torch
-import torchvision.utils
-from torchvision import transforms
 from torch.utils.data import DataLoader
-from dataset import cellDataset
-import torch.optim as optim
-import torch.nn as nn
 from u_net import Network
-from torch.utils.tensorboard import SummaryWriter
-import sys
+from dataset import cellDataset
+from run_manager import *
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from collections import OrderedDict
+from torchvision import transforms
 
-writer = SummaryWriter("runs/cells2")
-torch.set_grad_enabled(True)
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToPILImage(), transforms.ToTensor()])
-dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres", transform=transformCells)
-dataloader = DataLoader(dataset, shuffle=True, batch_size=5)
-
-batch = next(iter(dataloader))
-
+device = torch.device("cuda")
+params = OrderedDict(lr=[.01, 0.001], batch_size=[5], number_epocs=[2])
+m = RunManager()
 network = Network()
+network.to(device)
+dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres")
+torch.set_grad_enabled(True)
+loss_MSE = nn.MSELoss()
 
 
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(network.parameters(), lr=0.001, momentum=0.9)
-
-for epoch in range(2):  # loop over the dataset multiple times
-    running_loss = 0.0
-    for i, highres in enumerate(dataloader, 0):
-        lowres, highres = batch['lowres'], batch['highres']
+for run in RunBuilder.get_runs(params):
+    dataloader = DataLoader(dataset, run.batch_size, shuffle=True)
+    batch = next(iter(dataloader))
+    optimizer = torch.optim.Adam(network.parameters(), lr=run.lr)
+    m.begin_run(run, network, dataloader)
 
 
-        optimizer.zero_grad()
+    for epoch in range(run.number_epocs):
+        m.begin_epoch()
+        for i in dataloader:
+            lowres, highres = batch['lowres'], batch['highres']
+            lowres.to(device)
+            highres.to(device)
 
-        outputs = network(lowres)
-
-        loss = criterion(outputs, highres).to(device)
-        loss.backward().to(device)
-        optimizer.step()
-
-        running_loss += loss.item().to(device)
-
-        if (i * 1) % 5 == 0:
-            # training_loss = "LR=0.001, Momentum = 0.9"
-            writer.add_scalar("trainingloss3", running_loss / 5, epoch * len(dataloader) * i)
-
-
-
-
-
-
-PATH = './cell_net.pth'
-#torch.save(network.state_dict(), PATH)
+            #characteristics, labels = batch
+            preds = network(lowres)  # Pass Batch
+            #loss = F.cross_entropy(preds, highres)  # Calculate Loss
+            loss = loss_MSE(preds, highres)
+            optimizer.zero_grad()  # Zero Gradients
+            loss.backward()  # Calculate Gradients
+            optimizer.step()  # Update Weights
+            m.track_loss(loss, lowres)
+            #m.track_num_correct(preds, labels)
+        m.inform(2)
+        m.end_epoch()
+    m.end_run()

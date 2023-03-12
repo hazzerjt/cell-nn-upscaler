@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 from torchvision.io import read_image
 from PIL import Image
 import numpy as np
-
+import torchvision.transforms.functional as f
 class cellDataset(Dataset):
     def __init__(self, lowres_csv, highres_csv, highres_dir, lowres_dir, transform=None):
         self.lowres_csv = pd.read_csv(lowres_csv)
@@ -31,9 +31,17 @@ class cellDataset(Dataset):
         highres_image = torch.Tensor(highres_image)
         lowres_image = torch.Tensor(lowres_image)
 
+        highres_image_mean = highres_image.mean()
+        lowres_image_mean = lowres_image.mean()
+
+        highres_image_std = highres_image.std()
+        lowres_image_std = lowres_image.std()
+
         highres_image = highres_image[None, :, :]
         lowres_image = lowres_image[None, :, :]
 
+        highres_image = f.normalize(highres_image, mean=highres_image_mean, std=highres_image_std)
+        lowres_image = f.normalize(lowres_image, mean=lowres_image_mean, std=lowres_image_std)
 
 
         return {
