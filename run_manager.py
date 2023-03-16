@@ -39,15 +39,18 @@ class RunManager():
         self.epoch_loss = 0
         self.epoch_num_correct = 0
 
-    def end_epoch(self):
+    def end_epoch(self,correct_loss):
         epoch_duration = time.time() - self.epoch_start_time
         run_duration = time.time() - self.run_start_time
 
-        loss = self.epoch_loss / len(self.loader.dataset)
+        loss = correct_loss / len(self.loader.dataset)
         accuracy = self.epoch_num_correct / len(self.loader.dataset)
 
         self.tb.add_scalar('Loss', loss, self.epoch_count)
         self.tb.add_scalar('Accuracy', accuracy, self.epoch_count)
+
+    def end_epoch_ash(self):
+        print(self.run_params)
 
     def _get_num_correct(self, preds, labels):
         return preds.argmax(dim=1).eq(labels).sum().item()
@@ -55,6 +58,8 @@ class RunManager():
     def track_loss(self, loss, batch):
         self.epoch_loss += loss.item() * batch[0].shape[0]
 
+    def track_num_correct(self, preds, labels):
+        self.epoch_num_correct += self._get_num_correct(preds, labels)
 
     def inform(self, discrete_n):
         if self.epoch_count % discrete_n == 0:

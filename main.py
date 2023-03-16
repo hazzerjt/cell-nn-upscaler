@@ -12,7 +12,7 @@ transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1)
 dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres")
 dataloader = DataLoader(dataset, shuffle=True, batch_size=1)
 
-network = Network()
+network = Network(kernel_size=7)
 
 batch = next(iter(dataloader))
 lowres, highres = batch['lowres'], batch['highres']
@@ -24,6 +24,7 @@ plt.show()
 print(labels)
 
 preds = network(lowres)
+print(preds.size())
 
 plt.imshow(preds[0,0,:,:].detach().numpy(), cmap="gray")
 plt.show()

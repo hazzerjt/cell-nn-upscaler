@@ -1,50 +1,56 @@
-from torch.utils.data import DataLoader
-from u_net import Network
-from dataset import cellDataset
-from run_manager import *
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from collections import OrderedDict
 from torchvision import transforms
+from torch.utils.data import DataLoader
+from dataset import cellDataset
+import torch.nn as nn
+from u_net import Network
+from collections import OrderedDict
+from run_manager import *
 
-torch.cuda.empty_cache()
-device = torch.device("cuda")
-params = OrderedDict(lr=[.01, 0.001], batch_size=[2], number_epocs=[2])
-m = RunManager()
-network = Network()
-network.to(device)
-dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres")
+
+#writer = SummaryWriter("runs/cells2")
 torch.set_grad_enabled(True)
-loss_MSE = nn.MSELoss().to(device)
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToPILImage(), transforms.ToTensor()])
+dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres", transform=transformCells)
 
 
+#optimizer = optim.SGD(network.parameters(), lr=0.0001, momentum=0.9)Adam
+#optimizer = optim.RMSprop(network.parameters(), lr=0.01,  momentum=0.9, foreach=True)
+#optimizer = optim.Adam(network.parameters(), lr=0.0001)
+
+#nn.BCEWithLogitsLoss()
+#network = Network().to(device)
+params = OrderedDict(lr=[0.003], batch_size=[3, 5, 7, 10, 12, 15], number_epocs=[25], criterion=[nn.MSELoss()], kernel_size=[5])
+m = RunManager()
 
 for run in RunBuilder.get_runs(params):
-    dataloader = DataLoader(dataset, run.batch_size, shuffle=True)
-    batch = next(iter(dataloader))
+    network = Network(kernel_size=run.kernel_size).to(device)
     optimizer = torch.optim.Adam(network.parameters(), lr=run.lr)
+    dataloader = DataLoader(dataset, shuffle=True, batch_size=run.batch_size)
     m.begin_run(run, network, dataloader)
-
+    criterion = run.criterion
 
     for epoch in range(run.number_epocs):
+        running_loss = 0.0
         m.begin_epoch()
-        for i in dataloader:
+        for i, highres in enumerate(dataloader, 0):
+            batch = next(iter(dataloader))
             lowres, highres = batch['lowres'], batch['highres']
-            lowres.to(device)
-            highres.to(device)
+            lowres = lowres.to(device=device, dtype=torch.float32)
+            highres = highres.to(device=device, dtype=torch.float32)
 
-            #characteristics, labels = batch
-            preds = network(lowres).to(device)  # Pass Batch
-            #loss = F.cross_entropy(preds, highres)  # Calculate Loss
-            loss = loss_MSE(preds, highres).to(device)
-            optimizer.zero_grad()  # Zero Gradients
-            loss.backward()  # Calculate Gradients
-            optimizer.step()  # Update Weights
-            m.track_loss(loss, lowres)
-            #m.track_num_correct(preds, labels)
-            torch.cuda.empty_cache()
-        m.inform(2)
-        torch.cuda.empty_cache()
-        m.end_epoch()
+            outputs = network(lowres)
+
+            loss = criterion(outputs, highres)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+            #running_loss = loss.item()
+        m.end_epoch(running_loss)
+        print(running_loss)
     m.end_run()
+
+
