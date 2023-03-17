@@ -6,6 +6,8 @@ from torchvision.io import read_image
 from PIL import Image
 import numpy as np
 import torchvision.transforms.functional as f
+
+#Implement sharpening and brightness. One at a time
 class cellDataset(Dataset):
     def __init__(self, lowres_csv, highres_csv, highres_dir, lowres_dir, transform=None):
         self.lowres_csv = pd.read_csv(lowres_csv)

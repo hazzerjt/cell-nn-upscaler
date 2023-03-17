@@ -21,7 +21,7 @@ dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_lab
 
 #nn.BCEWithLogitsLoss()
 #network = Network().to(device)
-params = OrderedDict(lr=[0.003], batch_size=[3, 5, 7, 10, 12, 15], number_epocs=[25], criterion=[nn.MSELoss()], kernel_size=[5])
+params = OrderedDict(lr=[0.003], batch_size=[5], number_epocs=[50], criterion=[nn.MSELoss()], kernel_size=[5])
 m = RunManager()
 
 for run in RunBuilder.get_runs(params):
@@ -48,9 +48,9 @@ for run in RunBuilder.get_runs(params):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            #running_loss = loss.item()
         m.end_epoch(running_loss)
         print(running_loss)
     m.end_run()
+    torch.save(network.state_dict(), "model v1")
 
 

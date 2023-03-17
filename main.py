@@ -12,16 +12,20 @@ transformCells = transforms.Compose([transforms.Grayscale(num_output_channels=1)
 dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_labels.csv", "data/highres", "data/lowres")
 dataloader = DataLoader(dataset, shuffle=True, batch_size=1)
 
-network = Network(kernel_size=7)
+network = Network(kernel_size=5)
+network.load_state_dict(torch.load("model v1"))
+network.eval()
 
 batch = next(iter(dataloader))
 lowres, highres = batch['lowres'], batch['highres']
 
-images, labels = batch
-
 plt.imshow(lowres[0,0,:,:], cmap="gray")
+plt.savefig("lowreseeeee")
 plt.show()
-print(labels)
+plt.imshow(highres[0,0,:,:], cmap="gray")
+plt.savefig("highreseeeee")
+plt.show()
+print(lowres.size())
 
 preds = network(lowres)
 print(preds.size())

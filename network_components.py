@@ -6,12 +6,8 @@ class up(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding, bilinear=True):
         super().__init__()
 
-        if bilinear:
-            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-            self.conv = DoubleConv(in_channels, out_channels, in_channels // 2, kernel_size, padding)
-        else:
-            self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=2, stride=2)
-            self.conv = DoubleConv(in_channels, out_channels, kernel_size, padding)
+        self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=2, stride=2)
+        self.conv = DoubleConv(in_channels, out_channels, kernel_size, padding)
 
     def forward(self, t1, t2):
         t1 = self.up(t1)
