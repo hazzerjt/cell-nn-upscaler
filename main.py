@@ -13,17 +13,17 @@ dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_lab
 dataloader = DataLoader(dataset, shuffle=True, batch_size=1)
 
 network = Network(kernel_size=5)
-network.load_state_dict(torch.load("model v1"))
+network.load_state_dict(torch.load("lr0003bs5e50cmseks5"))
 network.eval()
 
 batch = next(iter(dataloader))
 lowres, highres = batch['lowres'], batch['highres']
 
 plt.imshow(lowres[0,0,:,:], cmap="gray")
-plt.savefig("lowreseeeee")
+plt.savefig("Lowres Image")
 plt.show()
 plt.imshow(highres[0,0,:,:], cmap="gray")
-plt.savefig("highreseeeee")
+plt.savefig("Highres Image")
 plt.show()
 print(lowres.size())
 
@@ -31,4 +31,5 @@ preds = network(lowres)
 print(preds.size())
 
 plt.imshow(preds[0,0,:,:].detach().numpy(), cmap="gray")
+plt.savefig("Upscaled Image")
 plt.show()

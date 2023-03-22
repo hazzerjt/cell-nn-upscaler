@@ -45,7 +45,18 @@ class cellDataset(Dataset):
         highres_image = f.normalize(highres_image, mean=highres_image_mean, std=highres_image_std)
         lowres_image = f.normalize(lowres_image, mean=lowres_image_mean, std=lowres_image_std)
 
-        lowres_image = f.adjust_sharpness(lowres_image, 2)
+        #highres_image = f.adjust_sharpness(highres_image, 1)
+        #lowres_image = f.adjust_sharpness(lowres_image, 1)
+
+        #highres_image = f.adjust_contrast(highres_image, 1)
+        #lowres_image = f.adjust_contrast(lowres_image, 1)
+
+        #highres_image = f.adjust_brightness(highres_image, 1)
+        #lowres_image = f.adjust_brightness(lowres_image, 1)
+
+        print(highres_image.dtype)
+        print(lowres_image.dtype)
+
 
         return {
             'highres': highres_image,
