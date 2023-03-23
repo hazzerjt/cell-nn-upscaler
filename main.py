@@ -13,7 +13,7 @@ dataset = cellDataset("data/lowres/lowres_labels.csv", "data/highres/highres_lab
 dataloader = DataLoader(dataset, shuffle=True, batch_size=1)
 
 network = Network(kernel_size=5)
-network.load_state_dict(torch.load("lr0003bs5e50cmseks5"))
+network.load_state_dict(torch.load("model v1 sharpening"))
 network.eval()
 
 batch = next(iter(dataloader))
